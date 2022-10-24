@@ -1,7 +1,6 @@
 package com.example.demo.config;
 
 import com.example.demo.common.Bpi;
-import com.example.demo.common.CoindeskApiResponse;
 import com.example.demo.common.CoindeskCurrency;
 import com.example.demo.service.CoindeskMod;
 import com.example.demo.service.CurrencyMod;
