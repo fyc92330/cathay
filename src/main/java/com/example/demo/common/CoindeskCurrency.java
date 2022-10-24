@@ -40,7 +40,7 @@ public class CoindeskCurrency {
   @Column(name = "COIN_DESC")
   private String coinDesc;
   /** 是否移除 */
-  @Column(name = "COIN_NUM", nullable = false)
+  @Column(name = "IS_REMOVED", nullable = false)
   private String isRemoved;
 
   public CoindeskCurrency(Bpi.Currency currency) {
@@ -52,30 +52,16 @@ public class CoindeskCurrency {
     this.coinName = Coin.getEnum(code).getNameStr();
   }
 
-
   /** 操作 */
-  private TypeEnum typeEnum;
   private String type;
-
-  public enum TypeEnum {
-    INSERT,
-    UPDATE,
-    DELETE;
-
-    public static TypeEnum getEnum(String type) {
-      return Arrays.stream(values())
-          .filter(e -> e.name().equals(type))
-          .findAny()
-          .orElseThrow(() -> new EnumConstantNotPresentException(TypeEnum.class, type));
-    }
-  }
 
   @Getter
   @AllArgsConstructor
   public enum Coin {
     USD("美金"),
     GBP("英鎊"),
-    EUR("歐元");
+    EUR("歐元"),
+    NTD("新台幣");
 
     private final String nameStr;
 

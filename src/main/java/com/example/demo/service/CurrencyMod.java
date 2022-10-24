@@ -8,10 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.UpdateSetFirstStep;
 import org.jooq.impl.DSL;
+import org.jooq.tools.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -55,11 +58,28 @@ public class CurrencyMod {
   @Transactional
   public void updateCurrency(CoindeskCurrency coindeskCurrency) {
     log.info("開始更新 coin:{}", coindeskCurrency);
-    dslContext.update(CURRENCY)
-        .set(DSL.field(DSL.name("COIN_SYMBOL")), coindeskCurrency.getCoinSymbol())
-        .set(DSL.field(DSL.name("COIN_RATE")), coindeskCurrency.getCoinRate())
-        .set(DSL.field(DSL.name("COIN_DESC")), coindeskCurrency.getCoinDesc())
-        .set(DSL.field(DSL.name("UPDATE_DATE")), LocalDateTime.now())
+    final String coinSymbol = coindeskCurrency.getCoinSymbol();
+    final BigDecimal coinRate = coindeskCurrency.getCoinRate();
+    final String coinDesc = coindeskCurrency.getCoinDesc();
+    if (StringUtils.isBlank(coinSymbol) && StringUtils.isBlank(coinDesc) && coinRate == null) {
+      log.info("更新失敗, 沒有更新內容:{}", coindeskCurrency);
+      return;
+    }
+
+    UpdateSetFirstStep<?> step = dslContext.update(CURRENCY);
+    if (!StringUtils.isBlank(coinSymbol)) {
+      step.set(DSL.field(DSL.name("COIN_SYMBOL")), coinSymbol);
+    }
+
+    if (coinRate != null) {
+      step.set(DSL.field(DSL.name("COIN_RATE")), coinRate);
+    }
+
+    if (!StringUtils.isBlank(coinDesc)) {
+      step.set(DSL.field(DSL.name("COIN_DESC")), coinDesc);
+    }
+
+    step.set(DSL.field(DSL.name("UPDATE_DATE")), LocalDateTime.now())
         .where(DSL.field(DSL.name("COIN_CODE")).eq(coindeskCurrency.getCoinCode()))
         .execute();
   }

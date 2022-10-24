@@ -82,12 +82,7 @@ public class H2TableConfig {
         .execute();
 
     // 寫入資料
-    this.getCoinList(coindeskMod.call().getBpi()).stream()
-        .map(c -> {
-          c.setTypeEnum(CoindeskCurrency.TypeEnum.INSERT);
-          return c;
-        })
-        .forEach(currencyMod::insertCurrency);
+    this.getCoinList(coindeskMod.call().getBpi()).forEach(currencyMod::insertCurrency);
     log.info("資料寫入完成");
   }
 

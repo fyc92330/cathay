@@ -12,8 +12,10 @@ import org.jooq.tools.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,35 +70,69 @@ public class DemoApplication {
   }
 
   /**
-   * 資料維護api
+   * 增加幣別
+   *
+   * @param bean
+   * @return
+   */
+  @PostMapping("/refresh")
+  @ResponseBody
+  public Object create(@RequestBody CoinMaintainBean bean) {
+    String isAutoSearch = bean.getIsAutoSearch();
+    this.validParams(isAutoSearch);
+    List<CoindeskCurrency> coins = "N".equals(isAutoSearch)
+        ? bean.getCoins()
+        : this.getCoinList(coindeskMod.call().getBpi());
+
+    log.info("開始進行");
+    coins.stream()
+        .filter(coin -> {
+          final String type = coin.getType();
+          return type == null || type.equals("INSERT");
+        })
+        .forEach(currencyMod::insertCurrency);
+
+    return ResponseEntity.ok().build();
+  }
+
+  /**
+   * 編輯幣別
    *
    * @param bean
    * @return
    */
   @PutMapping("/refresh")
   @ResponseBody
-  public Object update(@RequestBody CoinMaintainBean bean) {
+  public Object edit(@RequestBody CoinMaintainBean bean) {
     String isAutoSearch = bean.getIsAutoSearch();
     this.validParams(isAutoSearch);
-    List<CoindeskCurrency> codes = "N".equals(isAutoSearch)
-        ? bean.getCodes()
+    List<CoindeskCurrency> coins = "N".equals(isAutoSearch)
+        ? bean.getCoins()
         : this.getCoinList(coindeskMod.call().getBpi());
 
     log.info("開始進行");
-    codes.forEach(code -> {
-      final String type = code.getType();
-      CoindeskCurrency.TypeEnum typeEnum = type == null
-          ? CoindeskCurrency.TypeEnum.INSERT
-          : CoindeskCurrency.TypeEnum.getEnum(type);
-      switch (typeEnum) {
-        case INSERT -> currencyMod.insertCurrency(code);
-        case DELETE -> currencyMod.removeCurrency(code);
-        default -> currencyMod.updateCurrency(code);
-      }
-    });
+    coins.stream()
+        .filter(coin -> "UPDATE".equals(coin.getType()))
+        .forEach(currencyMod::updateCurrency);
 
     return ResponseEntity.ok().build();
   }
+
+  /**
+   * 移除幣別
+   *
+   * @param bean
+   * @return
+   */
+  @DeleteMapping("/refresh")
+  @ResponseBody
+  public Object remove(@RequestBody CoinMaintainBean bean) {
+    List<CoindeskCurrency> coins = bean.getCoins();
+    coins.forEach(currencyMod::removeCurrency);
+    return ResponseEntity.ok().build();
+  }
+
+  /** =================================================== private ================================================== */
 
   /**
    * 幣別集合
