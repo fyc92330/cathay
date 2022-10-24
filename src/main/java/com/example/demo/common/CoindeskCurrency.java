@@ -1,11 +1,13 @@
 package com.example.demo.common;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 @Getter
 @Setter
@@ -25,22 +27,50 @@ public class CoindeskCurrency {
   private BigDecimal coinRate;
   /** 貨幣描述 */
   private String coinDesc;
+  /** 是否移除 */
+  private String isRemoved;
 
   public CoindeskCurrency(CoindeskApiResponse.Currency currency) {
-    this.coinCode = currency.getCode();
+    final String code = currency.getCode();
+    this.coinCode = code;
     this.coinSymbol = currency.getSymbol();
     this.coinRate = currency.getRateFloat();
     this.coinDesc = currency.getDescription();
+    this.coinName = Coin.getEnum(code).getNameStr();
   }
 
-  /** 是否移除 */
-  private String isRemoved;
+
   /** 操作 */
   private TypeEnum typeEnum;
+  private String type;
 
   public enum TypeEnum {
     INSERT,
     UPDATE,
-    DELETE
+    DELETE;
+
+    public static TypeEnum getEnum(String type) {
+      return Arrays.stream(values())
+          .filter(e -> e.name().equals(type))
+          .findAny()
+          .orElseThrow(() -> new EnumConstantNotPresentException(TypeEnum.class, type));
+    }
+  }
+
+  @Getter
+  @AllArgsConstructor
+  enum Coin {
+    USD("美金"),
+    GBP("英鎊"),
+    EUR("歐元");
+
+    private final String nameStr;
+
+    public static Coin getEnum(String code) {
+      return Arrays.stream(values())
+          .filter(e -> e.name().equals(code))
+          .findAny()
+          .orElseThrow(() -> new EnumConstantNotPresentException(Coin.class, code));
+    }
   }
 }

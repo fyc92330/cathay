@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class CoindeskMod {
-
   private final ObjectMapper objectMapper = new ObjectMapper()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false) // 未知欄位忽略
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
@@ -25,6 +24,11 @@ public class CoindeskMod {
       .setSerializationInclusion(JsonInclude.Include.NON_NULL)
       .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
+  /**
+   * 叫用範例網址取得json
+   *
+   * @return
+   */
   public CoindeskApiResponse call() {
     OkHttpClient client = new OkHttpClient();
     Request request = new Request.Builder()

@@ -5,33 +5,32 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.example.demo.common.DemoConst.CURRENCY;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class CurrencyMod {
-
-  private static final Table<Record> CURRENCY = DSL.table("currency");
-
   private final DSLContext dslContext;
 
+  /**
+   * 取得列表
+   *
+   * @return
+   */
   public synchronized List<CoindeskCurrency> listCurrencies() {
-//    String sql = """
-//          SELECT *
-//          FROM CURRENCY
-//          WHERE IS_REMOVE = 'N'
-//        """;
-//    return dslContext.resultQuery(sql).fetchInto(CoindeskCurrency.class);
 
     List<Field<?>> columns = Arrays.asList(
         DSL.field(DSL.name("COIN_NUM")),
+        DSL.field(DSL.name("COIN_NAME")),
         DSL.field(DSL.name("COIN_CODE")),
         DSL.field(DSL.name("COIN_SYMBOL")),
         DSL.field(DSL.name("COIN_RATE")),
@@ -39,51 +38,73 @@ public class CurrencyMod {
         DSL.field(DSL.name("IS_REMOVED"))
     );
 
-    return dslContext.selectFrom(CURRENCY)
+    return dslContext.select(columns)
+        .from(CURRENCY)
         .where(DSL.field(DSL.name("IS_REMOVED")).eq("N"))
-        .fetch(r -> {
-          log.warn("{}", r);
-          return r.into(CoindeskCurrency.class);
-        });
+        .fetch()
+        .into(CoindeskCurrency.class);
   }
 
+  /**
+   * 更新
+   *
+   * @param coindeskCurrency
+   */
+  @Transactional
   public void updateCurrency(CoindeskCurrency coindeskCurrency) {
+    log.info("開始更新 coin:{}", coindeskCurrency);
     dslContext.update(CURRENCY)
         .set(DSL.field(DSL.name("COIN_SYMBOL")), coindeskCurrency.getCoinSymbol())
         .set(DSL.field(DSL.name("COIN_RATE")), coindeskCurrency.getCoinRate())
         .set(DSL.field(DSL.name("COIN_DESC")), coindeskCurrency.getCoinDesc())
+        .set(DSL.field(DSL.name("UPDATE_DATE")), LocalDateTime.now())
         .where(DSL.field(DSL.name("COIN_CODE")).eq(coindeskCurrency.getCoinCode()))
         .execute();
   }
 
+  /**
+   * 軟刪除
+   *
+   * @param coindeskCurrency
+   */
+  @Transactional
   public void removeCurrency(CoindeskCurrency coindeskCurrency) {
+    log.info("開始移除 coin:{}", coindeskCurrency);
     dslContext.update(CURRENCY)
         .set(DSL.field(DSL.name("IS_REMOVED")), "Y")
+        .set(DSL.field(DSL.name("UPDATE_DATE")), LocalDateTime.now())
         .where(DSL.field(DSL.name("COIN_CODE")).eq(coindeskCurrency.getCoinCode()))
         .execute();
   }
 
+  /**
+   * 新增
+   *
+   * @param coindeskCurrency
+   */
+  @Transactional
   public void insertCurrency(CoindeskCurrency coindeskCurrency) {
+    log.info("開始建立新的幣別 coin:{}", coindeskCurrency);
     final String code = coindeskCurrency.getCoinCode();
-    boolean isExists = this.listCurrencies().stream()
-        .anyMatch(currency -> code.equals(currency.getCoinCode()) && "Y".equals(currency.getIsRemoved()));
-    System.out.println(isExists);
-    if (isExists) {
-      this.reopen(code);
+    final CoindeskCurrency currency = this.listCurrencies().stream()
+        .filter(c -> code.equals(c.getCoinCode()))
+        .findAny()
+        .orElseGet(CoindeskCurrency::new);
+    // 建立幣值
+    if (currency.getCoinNum() == null) {
+      dslContext.insertInto(CURRENCY)
+          .set(DSL.field(DSL.name("COIN_NAME")), coindeskCurrency.getCoinName())
+          .set(DSL.field(DSL.name("COIN_CODE")), code)
+          .set(DSL.field(DSL.name("COIN_SYMBOL")), coindeskCurrency.getCoinSymbol())
+          .set(DSL.field(DSL.name("COIN_RATE")), coindeskCurrency.getCoinRate())
+          .set(DSL.field(DSL.name("COIN_DESC")), coindeskCurrency.getCoinDesc())
+          .execute();
+    } else if ("Y".equals(currency.getIsRemoved())) {
+      // 如果是被軟刪除的, 重新啟用
+      dslContext.update(CURRENCY)
+          .set(DSL.field(DSL.name("IS_REMOVED")), "N")
+          .where(DSL.field(DSL.name("COIN_CODE")).eq(code))
+          .execute();
     }
-
-    dslContext.insertInto(CURRENCY)
-        .set(DSL.field(DSL.name("COIN_CODE")), code)
-        .set(DSL.field(DSL.name("COIN_SYMBOL")), coindeskCurrency.getCoinSymbol())
-        .set(DSL.field(DSL.name("COIN_RATE")), coindeskCurrency.getCoinRate())
-        .set(DSL.field(DSL.name("COIN_DESC")), coindeskCurrency.getCoinDesc())
-        .execute();
-  }
-
-  private void reopen(String code) {
-    dslContext.update(CURRENCY)
-        .set(DSL.field(DSL.name("IS_REMOVED")), "N")
-        .where(DSL.field(DSL.name("COIN_CODE")).eq(code))
-        .execute();
   }
 }

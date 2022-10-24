@@ -69,12 +69,12 @@ public class DemoApplication {
         ? bean.getCodes()
         : this.getCoinList(coindeskMod.call().getBpi());
 
+    log.info("開始進行");
     codes.forEach(code -> {
-      log.warn("{}", code);
-      CoindeskCurrency.TypeEnum typeEnum = code.getTypeEnum();
-      if (typeEnum == null) {
-        typeEnum = CoindeskCurrency.TypeEnum.INSERT;
-      }
+      final String type = code.getType();
+      CoindeskCurrency.TypeEnum typeEnum = type == null
+          ? CoindeskCurrency.TypeEnum.INSERT
+          : CoindeskCurrency.TypeEnum.getEnum(type);
       switch (typeEnum) {
         case INSERT -> currencyMod.insertCurrency(code);
         case DELETE -> currencyMod.removeCurrency(code);
