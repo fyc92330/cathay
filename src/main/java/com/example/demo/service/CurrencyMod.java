@@ -1,6 +1,9 @@
 package com.example.demo.service;
 
+import com.example.demo.common.Bpi;
+import com.example.demo.common.CoindeskApiResponse;
 import com.example.demo.common.CoindeskCurrency;
+import com.example.demo.common.CoindeskManageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -40,7 +43,6 @@ public class CurrencyMod {
 
     return dslContext.select(columns)
         .from(CURRENCY)
-        .where(DSL.field(DSL.name("IS_REMOVED")).eq("N"))
         .fetch()
         .into(CoindeskCurrency.class);
   }
@@ -106,5 +108,33 @@ public class CurrencyMod {
           .where(DSL.field(DSL.name("COIN_CODE")).eq(code))
           .execute();
     }
+  }
+
+  /**
+   * 轉換資料格式
+   *
+   * @param response
+   * @param coins
+   * @return
+   */
+  public CoindeskManageResponse convertResponse(CoindeskApiResponse response, List<CoindeskCurrency> coins) {
+    Bpi bpi = new Bpi();
+    this.listCurrencies().stream()
+        .filter(c -> coins.stream().map(CoindeskCurrency::getCoinCode).anyMatch(c.getCoinCode()::equals))
+        .forEach(c -> {
+          final String coinCode = c.getCoinCode();
+          Bpi.Currency currency = new Bpi.Currency();
+          currency.setName(c.getCoinName());
+          currency.setCode(coinCode);
+          currency.setRateFloat(c.getCoinRate());
+
+          switch (CoindeskCurrency.Coin.getEnum(coinCode)) {
+            case USD -> bpi.setUSD(currency);
+            case EUR -> bpi.setEUR(currency);
+            case GBP -> bpi.setGBP(currency);
+          }
+        });
+
+    return new CoindeskManageResponse(response, bpi);
   }
 }

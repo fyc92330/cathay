@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.common.Bpi;
 import com.example.demo.common.CoinMaintainBean;
 import com.example.demo.common.CoindeskApiResponse;
 import com.example.demo.common.CoindeskCurrency;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -35,20 +37,34 @@ public class DemoApplication {
   private final CoindeskMod coindeskMod;
   private final CurrencyMod currencyMod;
 
+
   /**
-   * 呼叫coindesk - 重新爬取or從DB撈取
+   * 呼叫coindesk - 是否重新整理
    *
-   * @param isSearch
+   * @param isConvert
    * @return
    */
-  @GetMapping("/query/{isSearch}")
+  @GetMapping("/coindesk/{isConvert}")
   @ResponseBody
-  public Object init(@PathVariable String isSearch) {
-    return switch (isSearch) {
-      case "Y" -> coindeskMod.call();
-      case "N" -> currencyMod.listCurrencies();
-      default -> throw new RuntimeException("參數錯誤");
-    };
+  public Object convert(@PathVariable String isConvert) {
+    CoindeskApiResponse response = coindeskMod.call();
+    this.validParams(isConvert);
+    return "Y".equals(isConvert)
+        ? currencyMod.convertResponse(response, this.getCoinList(response.getBpi()))
+        : response;
+  }
+
+  /**
+   * 呼叫db幣別資料
+   *
+   * @return
+   */
+  @GetMapping("/query")
+  @ResponseBody
+  public Object init() {
+    return currencyMod.listCurrencies().stream()
+        .filter(c -> "N".equals(c.getIsRemoved()))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -61,10 +77,7 @@ public class DemoApplication {
   @ResponseBody
   public Object update(@RequestBody CoinMaintainBean bean) {
     String isAutoSearch = bean.getIsAutoSearch();
-    if (!StringUtils.containsAny(isAutoSearch, 'Y', 'N')) {
-      throw new RuntimeException("參數錯誤");
-    }
-
+    this.validParams(isAutoSearch);
     List<CoindeskCurrency> codes = "N".equals(isAutoSearch)
         ? bean.getCodes()
         : this.getCoinList(coindeskMod.call().getBpi());
@@ -85,11 +98,28 @@ public class DemoApplication {
     return ResponseEntity.ok().build();
   }
 
-  private List<CoindeskCurrency> getCoinList(CoindeskApiResponse.Bpi bpi) {
+  /**
+   * 幣別集合
+   *
+   * @param bpi
+   * @return
+   */
+  private List<CoindeskCurrency> getCoinList(Bpi bpi) {
     return List.of(
         new CoindeskCurrency(bpi.getUSD()),
         new CoindeskCurrency(bpi.getGBP()),
         new CoindeskCurrency(bpi.getEUR())
     );
+  }
+
+  /**
+   * 檢核參數是否正確
+   *
+   * @param invalidStr
+   */
+  private void validParams(String invalidStr) {
+    if (!StringUtils.containsAny(invalidStr, 'Y', 'N')) {
+      throw new RuntimeException("參數錯誤");
+    }
   }
 }

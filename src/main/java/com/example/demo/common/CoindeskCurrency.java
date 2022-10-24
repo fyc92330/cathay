@@ -30,7 +30,7 @@ public class CoindeskCurrency {
   /** 是否移除 */
   private String isRemoved;
 
-  public CoindeskCurrency(CoindeskApiResponse.Currency currency) {
+  public CoindeskCurrency(Bpi.Currency currency) {
     final String code = currency.getCode();
     this.coinCode = code;
     this.coinSymbol = currency.getSymbol();
@@ -59,7 +59,7 @@ public class CoindeskCurrency {
 
   @Getter
   @AllArgsConstructor
-  enum Coin {
+  public enum Coin {
     USD("美金"),
     GBP("英鎊"),
     EUR("歐元");

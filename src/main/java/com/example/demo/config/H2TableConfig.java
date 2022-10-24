@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.common.Bpi;
 import com.example.demo.common.CoindeskApiResponse;
 import com.example.demo.common.CoindeskCurrency;
 import com.example.demo.service.CoindeskMod;
@@ -119,7 +120,7 @@ public class H2TableConfig {
     return true;
   }
 
-  private List<CoindeskCurrency> getCoinList(CoindeskApiResponse.Bpi bpi) {
+  private List<CoindeskCurrency> getCoinList(Bpi bpi) {
     return List.of(
         new CoindeskCurrency(bpi.getUSD()),
         new CoindeskCurrency(bpi.getGBP()),
