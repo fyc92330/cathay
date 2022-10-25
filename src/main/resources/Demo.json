@@ -1,0 +1,342 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "測試用專案",
+    "description": "測試用專案",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9091/api/v1/coin",
+      "description": "http://localhost:9091/h2-ui 可以進入資料庫介面"
+    }
+  ],
+  "paths": {
+    "/coindesk": {
+      "get": {
+        "summary": "呼叫coindesk api",
+        "description": "帶入參數決定是否進行資料整理",
+        "parameters": [
+          {
+            "name": "isConvert",
+            "in": "path",
+            "description": "是否進行資料重整",
+            "required": true,
+            "example": "Y",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/api回應"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "get": {
+        "summary": "取得資料庫內資料",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/資料庫幣別"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/refresh": {
+      "post": {
+        "summary": "新增幣別",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/資料庫維護請求物件"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "summary": "編輯幣別",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/資料庫維護請求物件"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "summary": "移除幣別",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/資料庫維護請求物件"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "api回應": {
+        "type": "object",
+        "properties": {
+          "updateTime": {
+            "type": "string",
+            "example": "2022/10/25 08:16:00",
+            "description": "整理後的時間"
+          },
+          "disclaimer": {
+            "type": "string",
+            "example": "This data was produced from the CoinDesk Bitcoin Price Index (USD). Non-USD currency data converted using hourly conversion rate from openexchangerates.org",
+            "description": "免責聲明"
+          },
+          "chartName": {
+            "type": "string",
+            "example": "Bitcoin",
+            "description": "圖表名稱"
+          },
+          "bpi": {
+            "type": "object",
+            "properties": {
+              "USD": {
+                "type": "object",
+                "description": "美金的對應資訊, 下列資料內容相似",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "新台幣",
+                    "description": "幣別名稱"
+                  },
+                  "code": {
+                    "type": "string",
+                    "example": "TWD",
+                    "description": "幣別代號"
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "example": "$",
+                    "description": "代表幣別符號"
+                  },
+                  "rate_float": {
+                    "type": "number",
+                    "example": 100013.121,
+                    "description": "幣別匯率"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "台灣使用錢幣",
+                    "description": "幣別描述"
+                  }
+                }
+              },
+              "GBP": {
+                "type": "object",
+                "description": "英鎊的對應資訊, 下列資料內容相似",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "新台幣",
+                    "description": "幣別名稱"
+                  },
+                  "code": {
+                    "type": "string",
+                    "example": "TWD",
+                    "description": "幣別代號"
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "example": "$",
+                    "description": "代表幣別符號"
+                  },
+                  "rate_float": {
+                    "type": "number",
+                    "example": 100013.121,
+                    "description": "幣別匯率"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "台灣使用錢幣",
+                    "description": "幣別描述"
+                  }
+                }
+              },
+              "EUR": {
+                "type": "object",
+                "description": "歐元的對應資訊, 下列資料內容相似",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "新台幣",
+                    "description": "幣別名稱"
+                  },
+                  "code": {
+                    "type": "string",
+                    "example": "TWD",
+                    "description": "幣別代號"
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "example": "$",
+                    "description": "代表幣別符號"
+                  },
+                  "rate_float": {
+                    "type": "number",
+                    "example": 100013.121,
+                    "description": "幣別匯率"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "台灣使用錢幣",
+                    "description": "幣別描述"
+                  }
+                }
+              }
+            }
+          },
+          "time": {
+            "type": "object",
+            "description": "使用原始黨的時間數據",
+            "properties": {
+              "updated": {
+                "type": "string",
+                "example": "Oct 25, 2022 08:21:00 UTC"
+              },
+              "updatedISO": {
+                "type": "string",
+                "example": "2022-10-25T08:21:00+00:00"
+              },
+              "updateduk": {
+                "type": "string",
+                "example": "Oct 25, 2022 at 09:21 BST"
+              }
+            }
+          }
+        }
+      },
+      "資料庫幣別": {
+        "type": "object",
+        "properties": {
+          "coinNum": {
+            "type": "integer",
+            "example": 3,
+            "description": "流水號"
+          },
+          "coinName": {
+            "type": "string",
+            "example": "新台幣",
+            "description": "幣別名稱"
+          },
+          "isRemoved": {
+            "type": "string",
+            "example": "Y",
+            "description": "是否被移除"
+          },
+          "coinCode": {
+            "type": "string",
+            "example": "TWD",
+            "description": "幣別代號"
+          },
+          "coinSymbol": {
+            "type": "string",
+            "example": "$",
+            "description": "代表幣別符號"
+          },
+          "coinRate": {
+            "type": "number",
+            "example": 100013.121,
+            "description": "幣別匯率"
+          },
+          "coinDesc": {
+            "type": "string",
+            "example": "台灣使用錢幣",
+            "description": "幣別描述"
+          }
+        }
+      },
+      "資料庫維護請求物件": {
+        "type": "object",
+        "properties": {
+          "isAutoSearch": {
+            "type": "string",
+            "example": "Y",
+            "description": "是否自動從api取得"
+          },
+          "coins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "coinCode": {
+                  "type": "string",
+                  "example": "TWD",
+                  "description": "幣別代號"
+                },
+                "coinSymbol": {
+                  "type": "string",
+                  "example": "$",
+                  "description": "代表幣別符號"
+                },
+                "coinRate": {
+                  "type": "number",
+                  "example": 100013.121,
+                  "description": "幣別匯率"
+                },
+                "coinDesc": {
+                  "type": "string",
+                  "example": "台灣使用錢幣",
+                  "description": "幣別描述"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "UPDATE",
+                  "description": "INSERT/UPDATE/DELETE 決定此幣別的操作模式"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "coins"
+        ]
+      }
+    }
+  }
+}
