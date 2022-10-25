@@ -43,19 +43,19 @@ public class H2TableConfig {
         "COIN_CODE", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(false).length(32),
         "COIN_SYMBOL", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(false).length(16),
         "COIN_RATE", DefaultDataType.getDataType(SQLDialect.DEFAULT, BigDecimal.class).identity(false).nullable(false),
-        "COIN_DESC", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true),
+        "COIN_DESC", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true).length(512),
         "IS_REMOVED", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(false).defaultValue("N"),
         "CREATE_DATE", DefaultDataType.getDataType(SQLDialect.DEFAULT, LocalDateTime.class).defaultValue(LocalDateTime.now()),
         "UPDATE_DATE", DefaultDataType.getDataType(SQLDialect.DEFAULT, LocalDateTime.class)
     );
     LOG_DATA_TYPE_MAP = Map.of(
-        "INDEX", DefaultDataType.getDataType(SQLDialect.DEFAULT, Long.class).identity(true).nullable(false),
+        "LOG_INDEX", DefaultDataType.getDataType(SQLDialect.DEFAULT, Long.class).identity(true).nullable(false),
         "COIN_NUM", DefaultDataType.getDataType(SQLDialect.DEFAULT, Long.class).identity(false).nullable(true),
         "COIN_NAME", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true).length(32),
         "COIN_CODE", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true).length(32),
         "COIN_SYMBOL", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true).length(16),
         "COIN_RATE", DefaultDataType.getDataType(SQLDialect.DEFAULT, BigDecimal.class).identity(false).nullable(true),
-        "COIN_DESC", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true),
+        "COIN_DESC", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true).length(512),
         "IS_REMOVED", DefaultDataType.getDataType(SQLDialect.DEFAULT, String.class).identity(false).nullable(true),
         "CREATE_DATE", DefaultDataType.getDataType(SQLDialect.DEFAULT, LocalDateTime.class).defaultValue(LocalDateTime.now()));
   }
