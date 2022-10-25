@@ -7,6 +7,7 @@
 [Demo](src/main/resources/Demo.json)
 
 ### Flow
+執行腳本令gradle專案轉maven
 ```bash
 sh ./genPom.sh
 ```
