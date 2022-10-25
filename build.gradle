@@ -15,12 +15,6 @@ repositories {
 }
 
 publishing {
-//    customLibrary(MavenPublishing) {
-//        groupId = 'com.example'
-//        artifactId = 'demo'
-//        version = '0.0.1-SNAPSHOT'
-//    }
-
     publications {
         customLibrary(MavenPublication) {
             from components.java
