@@ -11,3 +11,5 @@ mvn dependency:get -DgroupId=com.example -DartifactId=demo -Dversion=0.0.1-SNAPS
 mvn clean package
 
 rm build.gradle gradlew gradlew.bat
+
+echo '========= 執行完成 ========='
